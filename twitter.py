@@ -19,7 +19,7 @@
 '''A library that provides a Python interface to the Twitter API'''
 
 __author__ = 'python-twitter@googlegroups.com'
-__version__ = '1.0rc1'
+__version__ = '1.0'
 
 
 import calendar
@@ -2878,12 +2878,13 @@ class Api(object):
   @classmethod
   def _calculate_status_length(cls, status, linksize=19):
     dummy_link_replacement = 'https://-%d-chars%s/' % (linksize, '-'*(linksize - 18))
-    shortened = ' '.join([x if not (x.startswith('http://') or
-                                    x.startswith('https://'))
-                            else
-                                dummy_link_replacement
-                            for x in status.split(' ')])
-    return len(shortened)
+    shortened = []
+    for x in status.split(' '):
+        if not (x.startswith('http://') or x.startswith('https://')):
+          shortened.append(x)
+        else:
+          shortened.append(dummy_link_replacement)
+    return len(' '.join(shortened))
 
   def PostUpdate(self, status, in_reply_to_status_id=None, latitude=None, longitude=None, place_id=None, display_coordinates=False, trim_user=False):
     '''Post a twitter status message from the authenticated user.
@@ -3411,7 +3412,7 @@ class Api(object):
     json = self._FetchUrl(url, parameters=parameters)
     try:
       data = self._ParseAndCheckTwitter(json)
-    except TwitterError as e:
+    except TwitterError, e:
         t = e.args[0]
         if len(t) == 1 and ('code' in t[0]) and (t[0]['code'] == 34):
           data = []
